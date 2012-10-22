@@ -9,6 +9,7 @@ import /init.usb.rc
 import /init.${ro.hardware}.rc
 import /init.trace.rc
 import /init.carrier.rc
+import /init.cm.rc
 
 on early-init
     # Set init and its forked children's oom_adj.
@@ -275,9 +276,6 @@ on post-fs-data
     # won't work.
     # Set indication (checked by vold) that we have finished this action
     #setprop vold.post_fs_data_done 1
-
-# Include extra init file
-    import /init.cm.rc
 
 on boot
 # basic network init
