@@ -85,7 +85,13 @@ struct {
     { "service.",         AID_SYSTEM,   0 },
     { "service.",         AID_RADIO,    0 },
     { "wlan.",            AID_SYSTEM,   0 },
+#ifdef HAVE_BLUETOOTH_BLUEZ
+    { "bluetooth.",       AID_SYSTEM,    0 },
+    { "bluetooth.hciattach",       AID_BLUETOOTH, 0  },
+    { "bluetooth.status",        AID_BLUETOOTH, AID_SYSTEM },
+#else
     { "bluetooth.",       AID_BLUETOOTH,   0 },
+#endif
     { "dhcp.",            AID_SYSTEM,   0 },
     { "dhcp.",            AID_DHCP,     0 },
     { "debug.",           AID_SYSTEM,   0 },
