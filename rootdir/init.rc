@@ -405,6 +405,12 @@ on boot
 # Set this property so surfaceflinger is not started by system_init
     setprop system_init.startsurfaceflinger 0
 
+# Start ADB before init.d so we can see errors    
+    start adbd
+
+# Start the init.d service
+    exec /system/bin/sysinit
+
     class_start core
     class_start main
 
