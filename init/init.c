@@ -46,6 +46,10 @@
 #include <private/android_filesystem_config.h>
 #include <termios.h>
 
+#ifndef INITLOGO
+#include <linux/kd.h>
+#endif
+
 #include "devices.h"
 #include "init.h"
 #include "log.h"
@@ -689,6 +693,7 @@ static int console_init_action(int nargs, char **args)
         have_console = 1;
     close(fd);
 
+#ifdef INITLOGO
     fd = open("/dev/tty0", O_WRONLY);
     if (fd >= 0) {
         const char *msg;
@@ -710,7 +715,13 @@ static int console_init_action(int nargs, char **args)
         write(fd, msg, strlen(msg));
         close(fd);
     }
-
+#else
+    fd = open("/dev/tty0", O_RDWR | O_SYNC);
+    if (fd >= 0) {
+        ioctl(fd, KDSETMODE, KD_GRAPHICS);
+        close(fd);
+    }
+#endif
     return 0;
 }
 
