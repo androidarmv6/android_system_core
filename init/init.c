@@ -320,6 +320,9 @@ void service_start(struct service *svc, const char *dynamic_args)
             }
 
             rc = security_compute_create(mycon, fcon, string_to_security_class("process"), &scon);
+            if (rc == 0 && !strcmp(scon, mycon)) {
+                ERROR("Warning!  Service %s needs a SELinux domain defined; please fix!\n", svc->name);
+            }
             freecon(mycon);
             freecon(fcon);
             if (rc < 0) {
@@ -992,6 +995,7 @@ struct selabel_handle* selinux_android_prop_context_handle(void)
 void selinux_init_all_handles(void)
 {
     sehandle = selinux_android_file_context_handle();
+    selinux_android_set_sehandle(sehandle);
     sehandle_prop = selinux_android_prop_context_handle();
 }
 
