@@ -491,6 +491,7 @@ service servicemanager /system/bin/servicemanager
     group system
     critical
     onrestart restart healthd
+    onrestart restart vold
     onrestart restart zygote
     onrestart restart media
     onrestart restart surfaceflinger
