@@ -917,6 +917,7 @@ static void process_key(struct charger *charger, int code, int64_t now)
             int64_t reboot_timeout = key->timestamp + POWER_ON_KEY_TIME;
             if (now >= reboot_timeout) {
                 LOGI("[%lld] rebooting\n", now);
+                set_backlight(false);
                 android_reboot(ANDROID_RB_RESTART, 0, 0);
             } else {
                 /* if the key is pressed but timeout hasn't expired,
@@ -972,6 +973,7 @@ static void handle_power_supply_state(struct charger *charger, int64_t now)
                  now, UNPLUGGED_SHUTDOWN_TIME, charger->next_pwr_check);
         } else if (now >= charger->next_pwr_check) {
             LOGI("[%lld] shutting down\n", now);
+            set_backlight(false);
             android_reboot(ANDROID_RB_POWEROFF, 0, 0);
         } else {
             /* otherwise we already have a shutdown timer scheduled */
@@ -1192,6 +1194,7 @@ void *alarm_thread(void *p)
         goto err;
 
     LOGI("Exit from power off charging, reboot the phone!\n");
+    set_backlight(false);
     android_reboot(ANDROID_RB_RESTART, 0, 0);
 
 err:
