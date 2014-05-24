@@ -1,0 +1,19 @@
+diff --git a/init/init.c b/init/init.c
+index 153b2ef..5f1ce39 100644
+--- a/init/init.c
++++ b/init/init.c
+@@ -1141,6 +1141,14 @@ int main(int argc, char **argv)
+     mount("devpts", "/dev/pts", "devpts", 0, NULL);
+     mount("proc", "/proc", "proc", 0, NULL);
+     mount("sysfs", "/sys", "sysfs", 0, NULL);
++    mknod("/dev/dpramerr", S_IFCHR | 0660, (255 << 8) | 0);  // added for samsung galaxy
++    mknod("/dev/dpram0", S_IFCHR | 0660, (255 << 8) | 1);    // added for samsung galaxy
++    mknod("/dev/dpram1", S_IFCHR | 0660, (255 << 8) | 2);    // added for samsung galaxy
++    mknod("/dev/multipdp", S_IFCHR | 0660, (10 << 8) | 132); // added for samsung galaxy
++    mknod("/dev/ttySMD0", S_IFCHR | 0666, (235 << 8) | 4);   // added for samsung galaxy
++    mknod("/dev/gememalloc", S_IFCHR | 0666, (151 << 8) | 0);// added for samsung galaxy
++    mknod("/dev/h6270enc", S_IFCHR | 0666, (211 << 8) | 0);  // added for samsung galaxy
++    mknod("/dev/hx170dec", S_IFCHR | 0666, (210 << 8) | 0);  // added for samsung galaxy
+ 
+         /* indicate that booting is in progress to background fw loaders, etc */
+     close(open("/dev/.booting", O_WRONLY | O_CREAT, 0000));

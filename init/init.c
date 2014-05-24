@@ -1141,6 +1141,17 @@ int main(int argc, char **argv)
     mount("devpts", "/dev/pts", "devpts", 0, NULL);
     mount("proc", "/proc", "proc", 0, NULL);
     mount("sysfs", "/sys", "sysfs", 0, NULL);
+#ifdef BCM_HARDWARE
+    // BCM21553 devices expect init to create certain device nodes...
+    mknod("/dev/gememalloc", S_IFCHR | 0666, (151 << 8) | 0);
+    mknod("/dev/dpramerr", S_IFCHR | 0660, (255 << 8) | 0);
+    mknod("/dev/dpram0", S_IFCHR | 0660, (255 << 8) | 1);
+    mknod("/dev/dpram1", S_IFCHR | 0660, (255 << 8) | 2);
+    //mknod("/dev/multipdp", S_IFCHR | 0660, (10 << 8) | 132);
+    //mknod("/dev/h6270enc", S_IFCHR | 0666, (211 << 8) | 0);
+    //mknod("/dev/hx170dec", S_IFCHR | 0666, (210 << 8) | 0);
+    //mknod("/dev/ttySMD0", S_IFCHR | 0666, (235 << 8) | 4);
+#endif
 
         /* indicate that booting is in progress to background fw loaders, etc */
     close(open("/dev/.booting", O_WRONLY | O_CREAT, 0000));
