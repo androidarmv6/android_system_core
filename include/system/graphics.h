@@ -114,7 +114,9 @@ enum {
      *   cb_offset = y_size + c_size
      *
      */
+#ifndef BCM_HARDWARE
     HAL_PIXEL_FORMAT_YV12   = 0x32315659, // YCrCb 4:2:0 Planar
+#endif
 
 
     /*
@@ -240,6 +242,11 @@ enum {
     HAL_PIXEL_FORMAT_YCbCr_422_SP       = 0x10, // NV16
     HAL_PIXEL_FORMAT_YCrCb_420_SP       = 0x11, // NV21
     HAL_PIXEL_FORMAT_YCbCr_422_I        = 0x14, // YUY2
+#ifdef BCM_HARDWARE
+    HAL_PIXEL_FORMAT_YCbCr_420_SP       = 0x15,
+    HAL_PIXEL_FORMAT_YV12               = 0x16,
+    HAL_PIXEL_FORMAT_YCbCr_420_P        = 0x17,
+#endif
 };
 
 /*
