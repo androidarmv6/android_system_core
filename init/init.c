@@ -69,6 +69,9 @@ struct selabel_handle *sehandle;
 struct selabel_handle *sehandle_prop;
 
 static int property_triggers_enabled = 0;
+#ifdef BCM_HARDWARE
+static bool charging_override = false;
+#endif
 
 #if BOOTCHART
 static int   bootchart_count;
@@ -820,6 +823,15 @@ static void import_kernel_nv(char *name, int for_emulator)
 #endif
     } else if (!strcmp(name,BOARD_CHARGING_CMDLINE_NAME)) {
         strlcpy(battchg_pause, value, sizeof(battchg_pause));
+#ifdef BCM_HARDWARE
+    // BCM2153 booting mode is available only via /proc/cmdline, so
+    // we can't use BOARD_CHARGING_MODE_BOOTING_LPM. 
+    // BOARD_CHARGING_CMDLINE_NAME is also problematic, as ot doesn't
+    // allow for a separate lpm.rc.
+    } else if (!strcmp(name,"BOOT_MODE")) {
+        if (strcmp(value, "1") == 0)
+            charging_override = true;
+#endif
     } else if (!strncmp(name, "androidboot.", 12) && name_len > 12) {
         const char *boot_prop_name = name + 12;
         char prop[PROP_NAME_MAX];
@@ -1066,6 +1078,13 @@ int audit_callback(void *data, security_class_t cls, char *buf, size_t len)
 static int charging_mode_booting(void)
 {
 #ifndef BOARD_CHARGING_MODE_BOOTING_LPM
+#ifdef BCM_HARDWARE
+    process_kernel_cmdline();
+    ERROR("charging_override is: %d", charging_override);
+    if (charging_override) {
+        return 1;
+    }
+#endif
     return 0;
 #else
     int f;
@@ -1141,6 +1160,48 @@ int main(int argc, char **argv)
     mount("devpts", "/dev/pts", "devpts", 0, NULL);
     mount("proc", "/proc", "proc", 0, NULL);
     mount("sysfs", "/sys", "sysfs", 0, NULL);
+#ifdef BCM_HARDWARE
+    // BCM21553 devices expect init to create certain device nodes...
+    mknod("/dev/gememalloc", S_IFCHR | 0666, (151 << 8) | 0);
+    mknod("/dev/dpramerr",   S_IFCHR | 0660, (255 << 8) | 0);
+    mknod("/dev/dpram0",     S_IFCHR | 0660, (255 << 8) | 1);
+    mknod("/dev/dpram1",     S_IFCHR | 0660, (255 << 8) | 2);
+    mknod("/dev/multipdp",   S_IFCHR | 0660, (10  << 8) | 132);
+    mknod("/dev/h6270enc",   S_IFCHR | 0666, (211 << 8) | 0);
+    mknod("/dev/hx170dec",   S_IFCHR | 0666, (210 << 8) | 0);
+    mknod("/dev/ttySMD0",    S_IFCHR | 0666, (235 << 8) | 4);
+    mknod("/dev/bml0",       S_IFBLK | 0660, (137 << 8) | 0);
+    mknod("/dev/bml1",       S_IFBLK | 0660, (137 << 8) | 1);
+    mknod("/dev/bml2",       S_IFBLK | 0660, (137 << 8) | 2);
+    mknod("/dev/bml3",       S_IFBLK | 0660, (137 << 8) | 3);
+    mknod("/dev/bml4",       S_IFBLK | 0660, (137 << 8) | 4);
+    mknod("/dev/bml5",       S_IFBLK | 0660, (137 << 8) | 5);
+    mknod("/dev/bml6",       S_IFBLK | 0660, (137 << 8) | 6);
+    mknod("/dev/bml7",       S_IFBLK | 0660, (137 << 8) | 7);
+    mknod("/dev/bml8",       S_IFBLK | 0660, (137 << 8) | 8);
+    mknod("/dev/bml9",       S_IFBLK | 0660, (137 << 8) | 9);
+    mknod("/dev/bml10",      S_IFBLK | 0660, (137 << 8) | 10);
+    mknod("/dev/bml11",      S_IFBLK | 0660, (137 << 8) | 11);
+    mknod("/dev/bml12",      S_IFBLK | 0660, (137 << 8) | 12);
+    mknod("/dev/bml13",      S_IFBLK | 0660, (137 << 8) | 13);
+    mknod("/dev/bml14",      S_IFBLK | 0660, (137 << 8) | 14);
+    mknod("/dev/bml15",      S_IFBLK | 0660, (137 << 8) | 15);
+    mknod("/dev/stl1",       S_IFBLK | 0660, (138 << 8) | 1);
+    mknod("/dev/stl2",       S_IFBLK | 0660, (138 << 8) | 2);
+    mknod("/dev/stl3",       S_IFBLK | 0660, (138 << 8) | 3);
+    mknod("/dev/stl4",       S_IFBLK | 0660, (138 << 8) | 4);
+    mknod("/dev/stl5",       S_IFBLK | 0660, (138 << 8) | 5);
+    mknod("/dev/stl6",       S_IFBLK | 0660, (138 << 8) | 6);
+    mknod("/dev/stl7",       S_IFBLK | 0660, (138 << 8) | 7);
+    mknod("/dev/stl8",       S_IFBLK | 0660, (138 << 8) | 8);
+    mknod("/dev/stl9",       S_IFBLK | 0755, (138 << 8) | 9);
+    mknod("/dev/stl10",      S_IFBLK | 0755, (138 << 8) | 10);
+    mknod("/dev/stl11",      S_IFBLK | 0755, (138 << 8) | 11);
+    mknod("/dev/stl12",      S_IFBLK | 0755, (138 << 8) | 12);
+    mknod("/dev/stl13",      S_IFBLK | 0755, (138 << 8) | 13);
+    mknod("/dev/stl14",      S_IFBLK | 0755, (138 << 8) | 14);
+    mknod("/dev/stl15",      S_IFBLK | 0755, (138 << 8) | 15);
+#endif
 
         /* indicate that booting is in progress to background fw loaders, etc */
     close(open("/dev/.booting", O_WRONLY | O_CREAT, 0000));
