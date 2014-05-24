@@ -250,6 +250,15 @@ static void usb_adb_init()
     if (fd < 0) {
        D("failed to open /dev/android_adb_enable\n");
     } else {
+#ifdef BCM_HARDWARE
+#define ADB_MSC_MOD 1
+        // BCM21553 devices require an ioctl command sent to enable ADB
+        // See: kernel/drivers/usb/gadget_brcm/android.c
+        int err = ioctl(fd, ADB_MSC_MOD, 1);
+        if (err < 0) {
+           D("failed to set Broadcom ADB ioctl\n");
+        }
+#endif
         close_on_exec(fd);
     }
 
