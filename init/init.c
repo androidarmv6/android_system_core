@@ -1180,11 +1180,32 @@ int main(int argc, char **argv)
     is_charger = !strcmp(bootmode, "charger");
 
     INFO("property init\n");
+#if defined(NO_SEPARATE_RECOVERY) && defined(BOARD_CHARGING_CMDLINE_RECOVERY_VALUE)
+        /* If a device has no dedicated recovery partition, we need coexistence with
+         * the OS version of default.prop. So we will use "default.prop.recovery"
+         * for recovery instead.
+         */
+    if (!is_charger) {
+        if (strcmp(battchg_pause, BOARD_CHARGING_CMDLINE_RECOVERY_VALUE) == 0)
+            property_load_boot_defaults(1);
+        else
+            property_load_boot_defaults(0);
+    }
+#else
     if (!is_charger)
         property_load_boot_defaults();
+#endif
 
     INFO("reading config file\n");
 
+#if defined(NO_SEPARATE_RECOVERY) && defined(BOARD_CHARGING_CMDLINE_RECOVERY_VALUE)
+   /* Some devicess use kernel NV to identify recovery mode. We always need to use
+    * a unique config for recovery when there is no recovery partition.
+    */
+    if (strcmp(battchg_pause, BOARD_CHARGING_CMDLINE_RECOVERY_VALUE) == 0)
+       init_parse_config_file("/recovery.rc");
+    else
+#endif
     if (!charging_mode_booting())
        init_parse_config_file("/init.rc");
     else
@@ -1212,8 +1233,10 @@ int main(int argc, char **argv)
     /* execute all the boot actions to get us started */
     action_for_each_trigger("init", action_add_queue_tail);
 
+#ifndef BOARD_CHARGING_CMDLINE_NEEDS_FS
     /* skip mounting filesystems in charger mode */
     if (!is_charger) {
+#endif
         action_for_each_trigger("early-fs", action_add_queue_tail);
         if(emmc_boot) {
             action_for_each_trigger("emmc-fs", action_add_queue_tail);
@@ -1222,7 +1245,9 @@ int main(int argc, char **argv)
         }
         action_for_each_trigger("post-fs", action_add_queue_tail);
         action_for_each_trigger("post-fs-data", action_add_queue_tail);
+#ifndef BOARD_CHARGING_CMDLINE_NEEDS_FS
     }
+#endif
 
     /* Repeat mix_hwrng_into_linux_rng in case /dev/hw_random or /dev/random
      * wasn't ready immediately after wait_for_coldboot_done
