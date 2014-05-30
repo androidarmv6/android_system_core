@@ -22,7 +22,11 @@
 
 extern void handle_property_set_fd(void);
 extern void property_init(void);
+#if defined(NO_SEPARATE_RECOVERY) && defined(BOARD_CHARGING_CMDLINE_RECOVERY_VALUE)
+extern void property_load_boot_defaults(bool recovery);
+#else
 extern void property_load_boot_defaults(void);
+#endif
 extern void load_persist_props(void);
 extern void start_property_service(void);
 void get_property_workspace(int *fd, int *sz);
