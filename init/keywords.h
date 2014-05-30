@@ -13,6 +13,7 @@ int do_hostname(int nargs, char **args);
 int do_ifup(int nargs, char **args);
 int do_insmod(int nargs, char **args);
 int do_mkdir(int nargs, char **args);
+int do_mknod(int nargs, char **args);
 int do_mount_all(int nargs, char **args);
 int do_mount(int nargs, char **args);
 int do_powerctl(int nargs, char **args);
@@ -66,6 +67,7 @@ enum {
     KEYWORD(import,      SECTION, 1, 0)
     KEYWORD(keycodes,    OPTION,  0, 0)
     KEYWORD(mkdir,       COMMAND, 1, do_mkdir)
+    KEYWORD(mknod,       COMMAND, 4, do_mknod)
     KEYWORD(mount_all,   COMMAND, 1, do_mount_all)
     KEYWORD(mount,       COMMAND, 3, do_mount)
     KEYWORD(on,          SECTION, 0, 0)

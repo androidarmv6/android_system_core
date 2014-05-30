@@ -726,6 +726,72 @@ int do_rmdir(int nargs, char **args)
     return rmdir(args[1]);
 }
 
+int do_mknod(int nargs, char **args)
+{
+    char *path;
+    int mode = 0666;
+    int major = 0, minor = 0;
+    int narg;
+    char *end;
+
+    path = args[1];
+
+    mode = strtol(args[3], &end, 0);
+    if( *end )
+    {
+        return -1;
+    }
+
+    if (!strcmp(args[2], "b"))
+    {
+        mode |= S_IFBLK;
+        narg = 6;
+    }
+    else if( !strcmp(args[2], "c") || !strcmp(args[2], "u") )
+    {
+        mode |= S_IFCHR;
+        narg = 6;
+    }
+    else if (!strcmp(args[2], "p"))
+    {
+        mode |= S_IFIFO;
+        narg = 4;
+    }
+    else
+    {
+        return -1;
+    }
+
+    if( narg != nargs )
+    {
+       return -1;
+    }
+
+    if( narg == 6 )
+    {
+        major = strtol(args[4], &end, 0);
+
+        if( *end )
+        {
+            return -1;
+        }
+
+        minor = strtol(args[5], &end, 0);
+
+        if( *end )
+        {
+            return -1;
+        }
+    }
+
+    if( mknod(path, mode, makedev(major, minor)) )
+    {
+        return 1;
+    }
+
+    return 0;
+}
+
 int do_sysclktz(int nargs, char **args)
 {
     struct timezone tz;
