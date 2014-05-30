@@ -562,9 +562,12 @@ void property_init(void)
     init_property_area();
 }
 
-void property_load_boot_defaults(void)
+void property_load_boot_defaults(bool recovery)
 {
-    load_properties_from_file(PROP_PATH_RAMDISK_DEFAULT);
+    if (!recovery)
+        load_properties_from_file(PROP_PATH_RAMDISK_DEFAULT);
+    else
+        load_properties_from_file(PROP_PATH_RAMDISK_DEFAULT".recovery");
 }
 
 int properties_inited(void)
