@@ -562,10 +562,20 @@ void property_init(void)
     init_property_area();
 }
 
+#if defined(NO_SEPARATE_RECOVERY) && defined(BOARD_CHARGING_CMDLINE_RECOVERY_VALUE)
+void property_load_boot_defaults(bool recovery)
+{
+    if (!recovery)
+        load_properties_from_file(PROP_PATH_RAMDISK_DEFAULT);
+    else
+        load_properties_from_file(PROP_PATH_RAMDISK_DEFAULT".recovery");
+}
+#else
 void property_load_boot_defaults(void)
 {
     load_properties_from_file(PROP_PATH_RAMDISK_DEFAULT);
 }
+#endif
 
 int properties_inited(void)
 {
