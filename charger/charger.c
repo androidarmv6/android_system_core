@@ -816,12 +816,16 @@ static void update_screen_state(struct charger *charger, int64_t now)
     /* unblank the screen  on first cycle */
     if (batt_anim->cur_cycle == 0) {
         gr_fb_blank(false);
-        set_backlight(true);
     }
 
 
     /* draw the new frame (@ cur_frame) */
     redraw_screen(charger);
+
+    /* set backlight on for the first cycle */
+    if (batt_anim->cur_cycle == 0) {
+        set_backlight(true);
+    }
 
     /* if we don't have anim frames, we only have one image, so just bump
      * the cycle counter and exit
