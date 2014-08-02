@@ -71,7 +71,9 @@
 
 #define BATTERY_FULL_THRESH     95
 
+#ifndef BACKLIGHT_TOGGLE_PATH
 #define BACKLIGHT_TOGGLE_PATH "/sys/class/leds/lcd-backlight/brightness"
+#endif
 
 #define LAST_KMSG_PATH          "/proc/last_kmsg"
 #define LAST_KMSG_MAX_SZ        (32 * 1024)
