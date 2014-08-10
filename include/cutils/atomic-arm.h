@@ -23,6 +23,28 @@
 #define ANDROID_ATOMIC_INLINE inline __attribute__((always_inline))
 #endif
 
+#if defined(__thumb__) && !defined(__thumb2__)
+#  define  __ATOMIC_SWITCH_TO_ARM \
+            "adr r3, 5f\n" \
+            "bx  r3\n" \
+            ".align\n" \
+            ".arm\n" \
+        "5:\n"
+/* note: the leading \n below is intentional */
+#  define __ATOMIC_SWITCH_TO_THUMB \
+            "\n" \
+            "adr r3, 6f+1\n" \
+            "bx  r3\n" \
+            ".thumb\n" \
+        "6:\n"
+
+#  define __ATOMIC_CLOBBERS   "r3",  /* list of clobbered registers */
+#else
+#  define  __ATOMIC_SWITCH_TO_ARM   /* nothing */
+#  define  __ATOMIC_SWITCH_TO_THUMB /* nothing */
+#  define  __ATOMIC_CLOBBERS        /* nothing */
+#endif
+
 extern ANDROID_ATOMIC_INLINE void android_compiler_barrier()
 {
     __asm__ __volatile__ ("" : : : "memory");
@@ -81,16 +103,18 @@ int android_atomic_cas(int32_t old_value, int32_t new_value,
 {
     int32_t prev, status;
     do {
-        __asm__ __volatile__ ("ldrex %0, [%3]\n"
+        __asm__ __volatile__ (__ATOMIC_SWITCH_TO_ARM
+                              "ldrex %0, [%3]\n"
                               "mov %1, #0\n"
                               "teq %0, %4\n"
 #ifdef __thumb2__
                               "it eq\n"
 #endif
-                              "strexeq %1, %5, [%3]"
+                              "strexeq %1, %5, [%3]\n"
+                              __ATOMIC_SWITCH_TO_THUMB
                               : "=&r" (prev), "=&r" (status), "+m"(*ptr)
                               : "r" (ptr), "Ir" (old_value), "r" (new_value)
-                              : "cc");
+                              : __ATOMIC_CLOBBERS "cc");
     } while (__builtin_expect(status != 0, 0));
     return prev != old_value;
 }
@@ -118,13 +142,15 @@ int32_t android_atomic_add(int32_t increment, volatile int32_t *ptr)
     int32_t prev, tmp, status;
     android_memory_barrier();
     do {
-        __asm__ __volatile__ ("ldrex %0, [%4]\n"
+        __asm__ __volatile__ (__ATOMIC_SWITCH_TO_ARM
+                              "ldrex %0, [%4]\n"
                               "add %1, %0, %5\n"
-                              "strex %2, %1, [%4]"
+                              "strex %2, %1, [%4]\n"
+                              __ATOMIC_SWITCH_TO_THUMB
                               : "=&r" (prev), "=&r" (tmp),
                                 "=&r" (status), "+m" (*ptr)
                               : "r" (ptr), "Ir" (increment)
-                              : "cc");
+                              : __ATOMIC_CLOBBERS "cc");
     } while (__builtin_expect(status != 0, 0));
     return prev;
 }
@@ -145,13 +171,15 @@ int32_t android_atomic_and(int32_t value, volatile int32_t *ptr)
     int32_t prev, tmp, status;
     android_memory_barrier();
     do {
-        __asm__ __volatile__ ("ldrex %0, [%4]\n"
+        __asm__ __volatile__ (__ATOMIC_SWITCH_TO_ARM
+                              "ldrex %0, [%4]\n"
                               "and %1, %0, %5\n"
-                              "strex %2, %1, [%4]"
+                              "strex %2, %1, [%4]\n"
+                              __ATOMIC_SWITCH_TO_THUMB
                               : "=&r" (prev), "=&r" (tmp),
                                 "=&r" (status), "+m" (*ptr)
                               : "r" (ptr), "Ir" (value)
-                              : "cc");
+                              : __ATOMIC_CLOBBERS "cc");
     } while (__builtin_expect(status != 0, 0));
     return prev;
 }
@@ -162,13 +190,15 @@ int32_t android_atomic_or(int32_t value, volatile int32_t *ptr)
     int32_t prev, tmp, status;
     android_memory_barrier();
     do {
-        __asm__ __volatile__ ("ldrex %0, [%4]\n"
+        __asm__ __volatile__ (__ATOMIC_SWITCH_TO_ARM
+                              "ldrex %0, [%4]\n"
                               "orr %1, %0, %5\n"
-                              "strex %2, %1, [%4]"
+                              "strex %2, %1, [%4]\n"
+                              __ATOMIC_SWITCH_TO_THUMB
                               : "=&r" (prev), "=&r" (tmp),
                                 "=&r" (status), "+m" (*ptr)
                               : "r" (ptr), "Ir" (value)
-                              : "cc");
+                              : __ATOMIC_CLOBBERS "cc");
     } while (__builtin_expect(status != 0, 0));
     return prev;
 }
