@@ -1245,6 +1245,8 @@ int main(int argc, char **argv)
         action_for_each_trigger("post-fs", action_add_queue_tail);
         action_for_each_trigger("post-fs-data", action_add_queue_tail);
 #ifndef BOARD_CHARGING_CMDLINE_NEEDS_FS
+    } else {
+        action_for_each_trigger("charger-fs", action_add_queue_tail);
     }
 #endif
 
