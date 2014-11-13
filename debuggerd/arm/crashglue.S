@@ -15,7 +15,9 @@ crash1:
 	ldr r11, =0xa5a50011
 	ldr r12, =0xa5a50012
 
-
+#if defined(__ARM_ARCH_5__) || defined(__ARM_ARCH_6__)
+        // VFPv3 was the first to have the fconstd instruction.
+#else
 	fconstd   d0, #0
 	fconstd   d1, #1
 	fconstd   d2, #2
@@ -50,7 +52,7 @@ crash1:
 	fconstd   d30, #30
 	fconstd   d31, #31
 #endif
-
+#endif // defined(__ARM_ARCH_5__) || defined(__ARM_ARCH_6__)
 	mov lr, #0
 	ldr lr, [lr]
 	b .
