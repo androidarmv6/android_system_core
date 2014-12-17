@@ -1103,9 +1103,28 @@ int main(int argc, char **argv)
         is_charger = !strcmp(bootmode, "charger") || charging_mode_booting();
 
     INFO("property init\n");
+#if defined(NO_SEPARATE_RECOVERY) && defined(BOARD_CHARGING_CMDLINE_RECOVERY_VALUE)
+        /* If a device has no dedicated recovery partition, we need coexistence with
+         * the OS version of default.prop. So we will use "default.prop.recovery"
+         * for recovery instead.
+         */
+    if (strcmp(battchg_pause, BOARD_CHARGING_CMDLINE_RECOVERY_VALUE) == 0)
+        property_load_boot_defaults(1);
+    else
+        property_load_boot_defaults(0);
+#else
     property_load_boot_defaults();
+#endif
 
     INFO("reading config file\n");
+#if defined(NO_SEPARATE_RECOVERY) && defined(BOARD_CHARGING_CMDLINE_RECOVERY_VALUE)
+   /* Some devicess use kernel NV to identify recovery mode. We always need to use
+    * a unique config for recovery when there is no recovery partition.
+    */
+    if (strcmp(battchg_pause, BOARD_CHARGING_CMDLINE_RECOVERY_VALUE) == 0)
+       init_parse_config_file("/recovery.rc");
+    else
+#endif
     init_parse_config_file("/init.rc");
 
     action_for_each_trigger("early-init", action_add_queue_tail);
